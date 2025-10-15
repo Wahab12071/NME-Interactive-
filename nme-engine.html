@@ -1,0 +1,1466 @@
+<div id="narrative-engine-root">
+  <style>
+    /* IMPORTANT: The global reset (*) and body styles have been removed. 
+    All remaining styles are now correctly scoped to #narrative-engine-root 
+    to prevent interference with the client's website.
+    */
+
+    /* --- UNIQUE ROOT STYLES (REPLACING BODY) --- */
+    #narrative-engine-root {
+      /* Replaces original <body> styles to position and style the container */
+      font-family: 'Arial', sans-serif;
+      color: #fff;
+      
+      /* IMPORTANT: These positioning rules determine how your engine sits on the client page */
+      position: absolute; /* Use fixed or absolute to overlay on the client site */
+      top: 0; 
+      left: 0;
+      width: 100vw; /* Use vw/vh for dimensions to take up the screen */
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      
+      /* Replicates original body display/centering properties */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px 10px;
+      
+      /* Replicates original body background */
+      background: linear-gradient(135deg, #2a2b3d 0%, #232536 100%);
+      
+      /* Ensure this is above other elements on the client site */
+      z-index: 99999; 
+    }
+
+    /* --- SANDBOXED STYLES START HERE --- */
+
+    #narrative-engine-root .background-ui {
+      position: absolute; top:0; left:0; width:100%; height:100%;
+      background: radial-gradient(circle at center, rgba(0,0,0,0.5), rgba(0,0,0,0.9) 70%);
+      z-index: -1; overflow: hidden;
+    }
+    #narrative-engine-root .background-ui::before {
+      content:'';
+      position:absolute; top:0; left:0; width:100%; height:100%;
+      background: linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%) 0 0,
+                  linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%) 50px 50px;
+      background-size: 50px 50px;
+      pointer-events: none;
+    }
+
+    #narrative-engine-root .container { width:100%; max-width:1600px; padding:20px; position:relative; z-index:1; }
+
+    /* --- REDESIGNED HEADER STYLES --- */
+    #narrative-engine-root .software-name {
+      font-family: 'Audiowide', cursive; 
+      font-size: 1.8rem; 
+      font-weight: 400; 
+      position:relative;
+      color: #e6f6ff; 
+      text-transform: uppercase;
+      margin-bottom: 3px; 
+      text-shadow: 0 0 10px rgba(100, 255, 255, 0.7), 
+                   0 0 20px rgba(100, 255, 255, 0.5), 
+                   0 0 30px #f2994a;
+      cursor: pointer;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(242, 153, 74, 0.5); 
+      transition: all 0.3s ease;
+    }
+    #narrative-engine-root .software-name:hover {
+      text-shadow: 0 0 15px rgba(100, 255, 255, 1), 
+                   0 0 30px rgba(100, 255, 255, 0.8), 
+                   0 0 50px #f2994a;
+    }
+    /* --------------------------------- */
+
+    #narrative-engine-root .bubbles-wrapper {
+      position: relative;
+      width: 100%;
+      height: 75vh;
+      overflow: hidden;
+      z-index:2;
+    }
+
+    #narrative-engine-root .bubble {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 30px;
+      padding: 12px 25px;
+      font-size: 0.9rem;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      min-width: 150px;
+      max-width: 200px;
+      z-index: 1;
+      animation: bubbleElastic 1.5s ease-in-out infinite, bubbleGlow 2s ease-in-out infinite, fadeIn 1s ease-out;
+      --bubble-glow-color: 255, 255, 255; 
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    #narrative-engine-root .bubble:hover {
+      box-shadow: 0 0 25px rgba(var(--bubble-glow-color),0.3), 0 0 40px rgba(var(--bubble-glow-color),0.2);
+    }
+    
+    #narrative-engine-root .bubble-title {
+        min-height: 1.2em; 
+    }
+    
+    #narrative-engine-root .bubble-content {
+      min-height: 2em; 
+      word-break: break-word; 
+      overflow-wrap: break-word; 
+      width: 100%; 
+    }
+
+    #narrative-engine-root .editor-active[contenteditable="true"] {
+        outline: 0px dotted rgba(242, 153, 74, 0.8); 
+    }
+    
+    @keyframes bubbleGlow {
+      0% { box-shadow: 0 0 25px rgba(var(--bubble-glow-color),0.3), 0 0 40px rgba(var(--bubble-glow-color),0.2); }
+      50% { box-shadow: 0 0 60px rgba(var(--bubble-glow-color),0.6), 0 0 80px rgba(var(--bubble-glow-color),0.5); }
+      100% { box-shadow: 0 0 25px rgba(var(--bubble-glow-color),0.3), 0 0 40px rgba(var(--bubble-glow-color),0.2); }
+    }
+
+    /* TIMER UI STYLES */
+    #narrative-engine-root .timer-ui {
+        display: none; 
+        position: absolute;
+        bottom: -15px;
+        right: -15px;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 0.8em;
+    }
+
+    #narrative-engine-root .timer-ui input {
+        width: 40px;
+        padding: 2px;
+        font-size: 0.9em;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        color: white;
+        text-align: center;
+    }
+    
+    /* BUBBLE EDITOR UI STYLES */
+    #narrative-engine-root .bubble-editor-ui {
+      display: none;
+      position: absolute;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 5px;
+      padding: 5px;
+      font-size: 0.8em;
+      text-align: left;
+      border: 1px solid rgba(242, 153, 74, 0.5); 
+      transition: opacity 0.3s ease;
+      min-width: 120px; 
+    }
+
+    /* Position Title Editor (Top Left) */
+    #narrative-engine-root .title-editor-ui {
+        top: -15px;
+        left: -15px; 
+    }
+
+    /* Position Content Editor (Bottom Left, FIXED POSITION) */
+    #narrative-engine-root .content-editor-ui {
+        bottom: -15px;
+        left: -15px; 
+    }
+    
+    #narrative-engine-root .bubble-editor-ui div {
+      margin: 5px 0;
+      white-space: nowrap;
+    }
+    
+    #narrative-engine-root .bubble-editor-ui label,
+    #narrative-engine-root .bubble-editor-ui input,
+    #narrative-engine-root .bubble-editor-ui select {
+      vertical-align: middle;
+    }
+    
+    #narrative-engine-root .bubble-editor-ui input[type="number"],
+    #narrative-engine-root .bubble-editor-ui select {
+      width: 40px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      color: white;
+      text-align: center;
+      padding: 2px;
+    }
+    
+    #narrative-engine-root .bubble-editor-ui input[type="color"] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      border: none;
+      background: transparent;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      cursor: pointer;
+    }
+    #narrative-engine-root .bubble-editor-ui input[type="color"]::-webkit-color-swatch {
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    #narrative-engine-root .bubble-editor-ui input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+    
+    /* BUBBLE COUNTER UI STYLES */
+    #narrative-engine-root .bubble-counter-ui {
+        display: none; 
+        position: absolute;
+        bottom: 20px; 
+        right: 20px; 
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 5px;
+        padding: 8px 15px;
+        font-size: 0.8em;
+        color: #fff;
+        border: 1px solid rgba(100, 255, 255, 0.5); 
+        transition: opacity 0.3s ease;
+        white-space: nowrap;
+    }
+
+    #narrative-engine-root .bubble-counter-ui label {
+        margin-right: 5px;
+        color: #e6f6ff;
+    }
+
+    #narrative-engine-root .bubble-counter-ui input[type="number"] {
+        width: 40px;
+        padding: 2px 5px;
+        font-size: 1em;
+        background: #2a2b3d;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        color: #fff;
+        text-align: center;
+        border-radius: 3px;
+    }
+
+    @keyframes bubbleElastic {
+      0% { transform: scale(1); }
+      25% { transform: scale(1.1, 0.9); }
+      50% { transform: scale(0.9, 1.1); }
+      75% { transform: scale(1.1, 0.9); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+   
+    /* --- REDESIGNED CTA BUTTON STYLES --- */
+    #narrative-engine-root .cta-btn {
+      position: relative; 
+      display: inline-block; 
+      padding: 16px 15px; 
+      background-color: #1a1a2b; 
+      color: #e6f6ff; 
+      text-decoration: none;
+      border-radius: 0px; 
+      font-size: 1.1rem; 
+      font-weight: 700;
+      text-shadow: 0 0 5px rgba(242, 153, 74, 0.8), 
+                   0 0 10px rgba(242, 153, 74, 0.5); 
+      border: 0px solid #f2994a; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.7); 
+      margin-top: 5px; 
+      margin-bottom:50px;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      overflow: hidden; 
+      z-index: 1;
+    }
+
+    /* Inner Layer/Glow Effect */
+    #narrative-engine-root .cta-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, rgba(242, 153, 74, 0.1), rgba(242, 153, 74, 0.3));
+      border-radius: 8px;
+      opacity: 0; 
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      transform: scale(0.95);
+      z-index: -1;
+    }
+
+    #narrative-engine-root .cta-btn:hover { 
+        transform: scale(1.02) translateY(-1px); 
+        border-color: #fff; 
+        box-shadow: 0 6px 20px rgba(0,0,0,1), 
+                    0 0 40px rgba(242, 153, 74, 0.8);
+    }
+    
+    #narrative-engine-root .cta-btn:hover::before {
+        opacity: 1; 
+        transform: scale(1);
+    }
+
+    /* Jiggle Click Animation */
+    @keyframes jiggle {
+        0% { transform: scale(1); }
+        25% { transform: scale(0.98) rotate(-1deg); }
+        50% { transform: scale(0.98) rotate(1deg); }
+        75% { transform: scale(0.98) rotate(-0.5deg); }
+        100% { transform: scale(1) rotate(0); }
+    }
+
+    #narrative-engine-root .jiggle-animation {
+        animation: jiggle 0.5s ease-out;
+    }
+
+
+    /* PARTICLE STYLES */
+    #narrative-engine-root .particle {
+      position: absolute;
+      background-color: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      animation: float 10s linear infinite, particleGlow 5s ease-in-out infinite;
+    }
+
+    @keyframes float { 0% {transform:translateY(0) translateX(0);} 100% {transform:translateY(50px) translateX(50px);} }
+    @keyframes particleGlow {0%{box-shadow:0 0 10px rgba(255,255,255,0.5);}50%{box-shadow:0 0 20px rgba(255,255,255,0.8);}100%{box-shadow:0 0 10px rgba(255,255,255,0.5);}}
+
+    /* PICKER UI STYLES */
+    #narrative-engine-root .picker-ui {
+      display: none;
+      position: absolute;
+      z-index: 3;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      transition: opacity 0.3s ease-in-out;
+      width: 150px;
+      max-width: 150px;
+      top: 0;
+      right: 0;
+    }
+
+    #narrative-engine-root .picker-ui input,
+    #narrative-engine-root .picker-ui select {
+      margin: 5px 0;
+      padding: 5px;
+      border-radius: 5px;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border: none;
+      width: 100%;
+    }
+    
+    #narrative-engine-root #ctaLinkInput {
+        border: 1px solid #f2994a;
+        margin-top: 10px;
+    }
+
+    #narrative-engine-root .font-suggestion {
+      padding: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    #narrative-engine-root .font-suggestion:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    #narrative-engine-root .font-suggestions {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    #narrative-engine-root .font-selector-options {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    #narrative-engine-root .font-selector-options input {
+      width: 48%;
+      padding: 5px;
+    }
+    
+    /* PASSWORD UI STYLES */
+    #narrative-engine-root #passwordUI {
+        display: none; 
+        position: fixed; /* Keep fixed to the viewport, relative to the document body */
+        bottom: 20px;
+        left: 20px; 
+        
+        width: auto; 
+        height: auto;
+        padding: 8px 12px; 
+        
+        background-color: rgba(42, 43, 61, 0.98); 
+        border: 1px solid #f2994a; 
+        border-radius: 5px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+        z-index: 100; 
+        backdrop-filter: blur(2px);
+        transition: all 0.5s ease-in-out; 
+        
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: row; 
+    }
+
+    #narrative-engine-root #passwordUI h3 {
+        display: none; 
+    }
+
+    #narrative-engine-root #passwordInput {
+        padding: 3px 8px;
+        margin: 0 8px 0 0; 
+        border: 1px solid rgba(242, 153, 74, 0.5); 
+        border-radius: 3px;
+        background-color: #232536;
+        color: #fff;
+        text-align: left;
+        font-size: 0.8rem; 
+        width: 120px; 
+        height: 25px;
+    }
+    #narrative-engine-root #passwordSubmit {
+        padding: 3px 8px;
+        border: none;
+        border-radius: 3px;
+        background-color: #f2994a;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        font-size: 0.8rem;
+        height: 25px;
+    }
+
+    #narrative-engine-root #passwordSubmit:hover {
+        background-color: #e08b3e;
+    }
+
+    #narrative-engine-root #passwordMessage {
+        color: #ff4d4d;
+        margin-left: 10px;
+        height: 1em;
+        font-size: 0.7rem;
+        width: 80px;
+        text-align: left;
+    }
+
+    /* EDITOR LOCKDOWN CLASS */
+    #narrative-engine-root .editor-mode-only {
+        display: none !important;
+    }
+    
+    /* Contenteditable reset for Audience View - sandboxed to the root */
+    #narrative-engine-root .software-name:not(.editor-active) {
+        pointer-events: none !important; 
+        contenteditable: false !important;
+    }
+    #narrative-engine-root .bubble > h3:not(.editor-active),
+    #narrative-engine-root .bubble > div[contenteditable]:not(.editor-active) {
+        contenteditable: false !important;
+    }
+  </style>
+
+  <div class="background-ui"></div>
+
+  <div class="container">
+    <div class="software-name" id="softwareName" contenteditable="false">Narrative Marketing Engine</div>
+    <div class="bubbles-wrapper" id="bubblesWrapper"></div>
+    <a href="#buy-now" class="cta-btn" id="ctaBtn" contenteditable="false">Unlock Your Campaign’s Power</a>
+  </div>
+  
+  <div class="bubble-counter-ui editor-mode-only" id="bubbleCounterUI">
+      <label for="maxBubbleCountInput">Max Bubbles:</label>
+      <input type="number" id="maxBubbleCountInput" min="1" max="50" step="1">
+  </div>
+  <div class="picker-ui editor-mode-only" id="pickerUI">
+    <label for="fontSearch">Search Font:</label>
+    <input type="text" id="fontSearch" placeholder="Search font...">
+    <div id="fontSuggestions" class="font-suggestions"></div>
+
+    <div class="font-selector-options">
+      <div>
+        <label for="fontSize">Font Size:</label>
+        <input type="number" id="fontSize" min="10" max="100" value="16">
+      </div>
+
+      <div>
+        <label for="fontWeight">Font Weight:</label>
+        <select id="fontWeight">
+          <option value="400">Normal</option>
+          <option value="700">Bold</option>
+          <option value="900">Bolder</option>
+        </select>
+      </div>
+    </div>
+    
+    <label for="colorPicker" id="headerTextColorLabel">Header Text Color:</label>
+    <input type="color" id="colorPicker">
+    <br>
+    
+    <label for="ctaTextColorPicker" id="ctaTextColorLabel">CTA Text Color:</label>
+    <input type="color" id="ctaTextColorPicker">
+    <br>
+    
+    <label for="headerBgColorPicker" id="headerBgColorLabel">Header Background:</label>
+    <input type="color" id="headerBgColorPicker">
+    <br>
+    
+    <label for="ctaBgColorPicker" id="ctaBgColorLabel">CTA Background:</label>
+    <input type="color" id="ctaBgColorPicker">
+    
+    <label for="ctaLinkInput" id="ctaLinkInputLabel">CTA Link (URL):</label>
+    <input type="url" id="ctaLinkInput" placeholder="Enter URL (e.g., website.com/page)">
+  </div>
+
+  <div id="passwordUI">
+      <h3>Editor Access Required</h3>
+      <input type="password" id="passwordInput" placeholder="Password">
+      <button id="passwordSubmit">UNLOCK</button>
+      <div id="passwordMessage"></div>
+  </div>
+
+</div>
+
+  <script>
+    (function() {
+    // --- CORE VARIABLES AND CONSTANTS ---
+    const EDITOR_PASSWORD = "12345NME09876";
+    const MAX_ALLOWED_BUBBLES = 50; 
+    let isEditorActive = false; 
+    let currentElement = null;
+    let currentBubble = null;
+    let bubbleIndex = 0;
+    let activeBubble = null;
+    let currentBubbleTimer = null;
+    let moveInterval = null; 
+
+    const bubblePopSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
+    
+    const googleFontList = [
+        'Roboto', 'Lato', 'Montserrat', 'Open Sans', 'Ubuntu', 'Poppins', 'Merriweather', 
+        'Playfair Display', 'Source Sans Pro', 'Oswald', 'Raleway', 'Lora', 'Noto Sans',
+        'Arial', 'Verdana', 'Helvetica', 'Georgia', 'Times New Roman', 'Courier New' 
+    ];
+
+    const initialBubbleContents = [
+        { title: "Live UI Editing Engine", content: "The Picker UI Engine allows users to make real-time design adjustments. Change fonts, sizes, colors, and more live, instantly reflecting on the header and CTA elements. No need to refresh – every click is updated immediately." },
+        { title: "Live Content Editing Inside Bubbles", content: "Directly edit content inside interactive bubbles. The Live Content Editable Engine allows you to change, add, or remove text in real-time, and see immediate results. Perfect for content creators who need real-time feedback and complete content flexibility." },
+        { title: "Dynamic Bubble Engine – The Storytelling Engine", content: "Think of each bubble as a story point. The Dynamic Bubble Engine lets you control the narrative, one bubble at a time. Deliver messages seamlessly, as each bubble becomes a dynamic piece of your story, evolving in real time." },
+        { title: "Instant Feedback & Real-Time Customization", content: "Modify your design and see immediate results. The real-time editing engine allows you to instantly update content without needing to wait for page reloads. No delays—the system is live and always editable." },
+        { title: "Mobile Responsive & Seamless UI/UX Design", content: "From dynamic bubble animation to real-time content changes, the experience is fluid, interactive, and perfectly responsive across all mobile devices. No more mobile optimization hassles—everything adapts automatically." },
+        { title: "Create Dynamic, Interactive Banners", content: "Say goodbye to static banners. This system lets you create dynamic, interactive banners with real-time updates, making content more engaging and tailored to you’re audience." },
+        { title: "No Coding Required", content: "You don’t need any coding knowledge. Whether you’re a content creator, marketer, or designer, the no-code interface empowers you to create and edit dynamic content easily with just a few clicks." },
+        { title: "Real-Time Engagement", content: "With interactive bubbles and real-time customization, you can boost engagement and create a unique user experience. Your audience will feel involved in the content as it evolves dynamically with their interactions." },
+        { title: "Why Choose This System?", content: "<ul><li>Create dynamic, interactive banners effortlessly.</li><li>No coding skills required—perfect for all skill levels.</li><li>Boost your brand’s visual presence with custom, live-updated elements.</li><li>Interactive bubbles, dynamic elements—enhance engagement instantly.</li><li>Save hours of work with real-time adjustments.</li><li>User-friendly interface designed for non-coders, no tech skills required.</li><li>Mobile-optimized for seamless experiences on any device.</li><li>Real-time customization and editing—make changes on the fly without waiting for reloads.</li><li>Engage your audience by telling a story with each bubble, improving content interaction.</li></ul>" }
+    ];
+
+    // --- DOM ELEMENT REFERENCES ---
+    const softwareName = document.getElementById('softwareName');
+    const ctaBtn = document.getElementById('ctaBtn');
+    const bubblesWrapper = document.getElementById('bubblesWrapper');
+    
+    // Picker UI Elements
+    const fontSearch = document.getElementById('fontSearch');
+    const fontSuggestions = document.getElementById('fontSuggestions');
+    const pickerUI = document.getElementById('pickerUI');
+    const fontSizeInput = document.getElementById('fontSize');
+    const fontWeightInput = document.getElementById('fontWeight');
+    
+    const colorPicker = document.getElementById('colorPicker'); // Header Text Color
+    const ctaTextColorPicker = document.getElementById('ctaTextColorPicker'); // CTA Text Color
+    
+    const headerBgColorPicker = document.getElementById('headerBgColorPicker');
+    const ctaBgColorPicker = document.getElementById('ctaBgColorPicker');
+    const ctaLinkInput = document.getElementById('ctaLinkInput');
+    
+    const headerTextColorLabel = document.getElementById('headerTextColorLabel');
+    const ctaTextColorLabel = document.getElementById('ctaTextColorLabel');
+    const headerBgColorLabel = document.getElementById('headerBgColorLabel');
+    const ctaBgColorLabel = document.getElementById('ctaBgColorLabel');
+    const ctaLinkInputLabel = document.getElementById('ctaLinkInputLabel');
+
+    // Password UI Elements
+    const passwordUI = document.getElementById('passwordUI');
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordSubmit = document.getElementById('passwordSubmit');
+    const passwordMessage = document.getElementById('passwordMessage');
+    
+    // Bubble Counter Elements
+    const bubbleCounterUI = document.getElementById('bubbleCounterUI');
+    const maxBubbleCountInput = document.getElementById('maxBubbleCountInput');
+    
+    // --- LOCAL STORAGE LOAD/INIT ---
+    let bubbleContents = JSON.parse(localStorage.getItem('savedBubbleContent')) || initialBubbleContents;
+    let bubbleDurations = JSON.parse(localStorage.getItem('bubbleDurations')) || {};
+    let bubbleCustomizations = JSON.parse(localStorage.getItem('bubbleCustomizations')) || {}; 
+    let ctaLink = localStorage.getItem('ctaLink') || '#buy-now';
+    ctaBtn.href = ctaLink;
+
+    let maxBubbleCount = parseInt(localStorage.getItem('maxBubbleCount'));
+    if (isNaN(maxBubbleCount) || maxBubbleCount < 1) {
+        maxBubbleCount = bubbleContents.length;
+    }
+    maxBubbleCount = Math.min(maxBubbleCount, MAX_ALLOWED_BUBBLES); 
+    maxBubbleCountInput.value = maxBubbleCount;
+
+    // --- HELPER FUNCTIONS ---
+
+    function loadGoogleFont(fontName) {
+        if (!fontName || fontName === 'Arial' || fontName === 'Verdana' || fontName.includes('Audiowide')) return; 
+        const fontLink = document.createElement('link');
+        fontLink.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, '+')}:wght@400;700;900&display=swap`;
+        fontLink.rel = 'stylesheet';
+        document.head.appendChild(fontLink);
+    }
+
+    function applyJiggleAnimation(element) {
+        element.classList.add('jiggle-animation');
+        setTimeout(() => {
+            element.classList.remove('jiggle-animation');
+        }, 500); 
+    }
+
+    // --- HEADER/CTA PERSISTENCE ---
+
+    function savePickerCustomizations() {
+        // 1. Save Header Customizations
+        const headerStyles = {
+            text: softwareName.textContent,
+            fontFamily: softwareName.style.fontFamily,
+            fontSize: softwareName.style.fontSize,
+            fontWeight: softwareName.style.fontWeight,
+            color: colorPicker.value, // Header Text Color
+            bgColor: headerBgColorPicker.value, // Header BG color
+        };
+        localStorage.setItem('headerStyles', JSON.stringify(headerStyles));
+
+        // 2. Save CTA Customizations
+        const ctaStyles = {
+            text: ctaBtn.textContent,
+            fontFamily: ctaBtn.style.fontFamily,
+            fontSize: ctaBtn.style.fontSize,
+            fontWeight: ctaBtn.style.fontWeight,
+            color: ctaTextColorPicker.value, // CTA Text Color
+            bgColor: ctaBgColorPicker.value, // CTA BG color
+            link: ctaBtn.href,
+        };
+        localStorage.setItem('ctaStyles', JSON.stringify(ctaStyles));
+    }
+
+    function loadPickerCustomizations() {
+        // 1. Load Header
+        const savedHeader = JSON.parse(localStorage.getItem('headerStyles'));
+        if (savedHeader) {
+            softwareName.textContent = savedHeader.text || softwareName.textContent;
+            softwareName.style.fontFamily = savedHeader.fontFamily || '';
+            softwareName.style.fontSize = savedHeader.fontSize || '';
+            softwareName.style.fontWeight = savedHeader.fontWeight || '';
+            softwareName.style.color = savedHeader.color || ''; // Apply Header color
+            softwareName.style.backgroundColor = savedHeader.bgColor || '';
+            
+            if (savedHeader.fontFamily) {
+                loadGoogleFont(savedHeader.fontFamily.replace(/['"]|,\s*sans-serif/g, '')); 
+            }
+        }
+
+        // 2. Load CTA
+        const savedCTA = JSON.parse(localStorage.getItem('ctaStyles'));
+        if (savedCTA) {
+            ctaBtn.textContent = savedCTA.text || ctaBtn.textContent;
+            ctaBtn.style.fontFamily = savedCTA.fontFamily || '';
+            ctaBtn.style.fontSize = savedCTA.fontSize || '';
+            ctaBtn.style.fontWeight = savedCTA.fontWeight || '';
+            ctaBtn.style.color = savedCTA.color || ''; // Apply CTA color
+            ctaBtn.style.backgroundColor = savedCTA.bgColor || '';
+            ctaBtn.href = savedCTA.link || ctaBtn.href;
+        }
+        
+        // 3. Update Picker UI inputs to reflect loaded state
+        if (savedHeader) {
+            colorPicker.value = savedHeader.color || colorPicker.value; // Header Picker reflects Header color
+            headerBgColorPicker.value = savedHeader.bgColor || headerBgColorPicker.value;
+            fontSizeInput.value = savedHeader.fontSize ? parseInt(savedHeader.fontSize) : fontSizeInput.value;
+            fontWeightInput.value = savedHeader.fontWeight || fontWeightInput.value;
+        }
+        if (savedCTA) {
+            ctaTextColorPicker.value = savedCTA.color || ctaTextColorPicker.value; // CTA Picker reflects CTA color
+            ctaBgColorPicker.value = savedCTA.bgColor || ctaBgColorPicker.value;
+            ctaLinkInput.value = savedCTA.link || ctaLinkInput.value;
+        }
+    }
+    
+    // --- DYNAMIC CONTENT MANAGEMENT ---
+
+    function updateBubbleContentLength(newMax) {
+        let currentLength = bubbleContents.length;
+
+        if (newMax > currentLength) {
+            for (let i = currentLength; i < newMax; i++) {
+                bubbleContents.push({ title: `New Bubble ${i + 1}`, content: "Click here to add content..." });
+                bubbleCustomizations[i] = {}; 
+                bubbleDurations[i] = 18000;  
+            }
+        } else if (newMax < currentLength) {
+            for (let i = newMax; i < currentLength; i++) {
+                delete bubbleCustomizations[i];
+                delete bubbleDurations[i];
+            }
+            bubbleContents.length = newMax;
+        }
+        
+        localStorage.setItem('savedBubbleContent', JSON.stringify(bubbleContents));
+        localStorage.setItem('bubbleCustomizations', JSON.stringify(bubbleCustomizations));
+        localStorage.setItem('bubbleDurations', JSON.stringify(bubbleDurations));
+    }
+
+    function saveMaxBubbleCount() {
+        if (!isEditorActive) return;
+        
+        let newValue = parseInt(maxBubbleCountInput.value);
+        if (isNaN(newValue) || newValue < 1) {
+            newValue = 1;
+        } else if (newValue > MAX_ALLOWED_BUBBLES) {
+            newValue = MAX_ALLOWED_BUBBLES;
+        }
+        
+        updateBubbleContentLength(newValue);
+
+        maxBubbleCount = newValue;
+        maxBubbleCountInput.value = maxBubbleCount;
+        localStorage.setItem('maxBubbleCount', maxBubbleCount);
+        
+        if (bubbleIndex >= maxBubbleCount) {
+             bubbleIndex = 0; 
+        }
+        
+        // Restart the bubble sequence with new count
+        if (currentBubble) {
+            clearTimeout(currentBubbleTimer);
+            if(moveInterval) clearInterval(moveInterval);
+            currentBubble.remove();
+            activeBubble = null;
+            createBubble(bubbleIndex); 
+        }
+    }
+
+    // --- EDITOR MODE ACTIVATION / DEACTIVATION ---
+
+    function updateBubbleControls() {
+        document.querySelectorAll('.bubble').forEach(bubble => {
+            const title = bubble.querySelector('h3');
+            const content = bubble.querySelector('div[contenteditable]:not(.timer-ui)');
+            const timerUI = bubble.querySelector('.timer-ui');
+            const titleEditorUI = bubble.querySelector('.title-editor-ui');
+            const contentEditorUI = bubble.querySelector('.content-editor-ui');
+
+            if (isEditorActive) {
+                title.setAttribute('contenteditable', 'true');
+                content.setAttribute('contenteditable', 'true');
+                title.classList.add('editor-active');
+                content.classList.add('editor-active');
+                timerUI.classList.remove('editor-mode-only');
+                titleEditorUI.classList.remove('editor-mode-only');
+                contentEditorUI.classList.remove('editor-mode-only');
+            } else {
+                title.setAttribute('contenteditable', 'false');
+                content.setAttribute('contenteditable', 'false');
+                title.classList.remove('editor-active');
+                content.classList.remove('editor-active');
+                timerUI.classList.add('editor-mode-only');
+                titleEditorUI.classList.add('editor-mode-only');
+                contentEditorUI.classList.add('editor-mode-only');
+                // Ensure editor UIs are hidden when locked
+                timerUI.style.display = 'none';
+                titleEditorUI.style.display = 'none';
+                contentEditorUI.style.display = 'none';
+            }
+        });
+    }
+
+    function activateEditorMode() {
+        isEditorActive = true;
+        
+        passwordUI.style.display = 'none'; 
+        
+        pickerUI.classList.remove('editor-mode-only');
+        softwareName.classList.add('editor-active');
+        softwareName.setAttribute('contenteditable', 'true');
+        ctaBtn.setAttribute('contenteditable', 'true'); // Make CTA text editable
+        
+        bubbleCounterUI.classList.remove('editor-mode-only'); 
+
+        updateBubbleControls();
+        console.log("Editor Mode Activated. Controls are unlocked.");
+    }
+
+    function showPasswordUI() {
+        if (isEditorActive) return; 
+        
+        passwordUI.style.display = 'flex'; 
+        passwordInput.value = '';
+        passwordMessage.textContent = '';
+        passwordInput.focus();
+    }
+
+    function checkPassword() {
+        if (passwordInput.value === EDITOR_PASSWORD) {
+            activateEditorMode();
+        } else {
+            passwordMessage.textContent = 'Incorrect Password. Try again.';
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    }
+    
+    // --- PICKER UI LOGIC ---
+
+    function openPicker(element, type) {
+        if (!isEditorActive) return;
+        
+        pickerUI.style.display = 'block';
+        pickerUI.style.opacity = 1;
+        const rect = element.getBoundingClientRect();
+
+        const pickerWidth = pickerUI.offsetWidth;
+        const pickerHeight = pickerUI.offsetHeight;
+
+        let leftPosition = rect.left + window.scrollX;
+        let topPosition = rect.top + window.scrollY + rect.height + 10;
+
+        if (leftPosition + pickerWidth > window.innerWidth) {
+            leftPosition = rect.left + window.scrollX - pickerWidth;
+        }
+
+        if (topPosition + pickerHeight > window.innerHeight) {
+            topPosition = rect.top + window.scrollY - pickerHeight - 10;
+        }
+
+        pickerUI.style.top = `${topPosition}px`;
+        pickerUI.style.left = `${leftPosition}px`;
+        
+        const isHeader = type === 'header';
+        const isCTA = type === 'cta';
+        
+        // Header elements (Software Name)
+        headerTextColorLabel.style.display = isHeader ? 'block' : 'none';
+        colorPicker.style.display = isHeader ? 'block' : 'none'; 
+        headerBgColorLabel.style.display = isHeader ? 'block' : 'none';
+        headerBgColorPicker.style.display = isHeader ? 'block' : 'none';
+        
+        // CTA elements (Button)
+        ctaTextColorLabel.style.display = isCTA ? 'block' : 'none';
+        ctaTextColorPicker.style.display = isCTA ? 'block' : 'none';
+        ctaBgColorLabel.style.display = isCTA ? 'block' : 'none';
+        ctaBgColorPicker.style.display = isCTA ? 'block' : 'none';
+        ctaLinkInputLabel.style.display = isCTA ? 'block' : 'none';
+        ctaLinkInput.style.display = isCTA ? 'block' : 'none';
+        
+        if (isCTA) {
+            const currentHref = ctaBtn.getAttribute('href'); 
+            // Display URL without 'https://' prefix for cleaner editing
+            ctaLinkInput.value = currentHref.startsWith('https://') ? currentHref.substring(8) : (currentHref.startsWith('http://') ? currentHref.substring(7) : currentHref);
+        }
+
+        fontSuggestions.innerHTML = '';
+        // Hide bubble-specific UIs when picker opens
+        if (currentBubble) {
+            currentBubble.querySelector('.timer-ui').style.display = 'none';
+            currentBubble.querySelector('.title-editor-ui').style.display = 'none';
+            currentBubble.querySelector('.content-editor-ui').style.display = 'none';
+            bubbleCounterUI.style.display = 'none'; 
+        }
+    }
+
+    function hidePickerUI() {
+        if (pickerUI.style.display !== 'block') return;
+        pickerUI.style.opacity = 0;
+        setTimeout(() => { pickerUI.style.display = 'none'; }, 300);
+        fontSuggestions.innerHTML = '';
+    }
+    
+    // --- BUBBLE CREATION & LIFECYCLE ---
+
+    function setBubbleTimer() {
+        clearTimeout(currentBubbleTimer);
+        const index = currentBubble.dataset.index;
+        const duration = bubbleDurations[index] || 18000; 
+        
+        currentBubbleTimer = setTimeout(() => {
+            currentBubble.style.transform = 'scale(1.5)';
+            currentBubble.style.opacity = 0;
+            if (isEditorActive) bubblePopSound.play(); 
+            if(moveInterval) clearInterval(moveInterval);
+            
+            setTimeout(() => {
+                if (currentBubble) currentBubble.remove();
+                activeBubble = null;
+                
+                const actualMax = maxBubbleCount; 
+                bubbleIndex = (bubbleIndex + 1) % actualMax;
+                
+                createBubble(bubbleIndex);
+            }, 500);
+        }, duration);
+    }
+
+    function saveBubbleContent(bubble, index) {
+        if (!isEditorActive) return;
+        
+        const bubbleTitle = bubble.querySelector('.bubble-title');
+        const bubbleContent = bubble.querySelector('.bubble-content');
+        
+        // Save content
+        bubbleContents[index].title = bubbleTitle.textContent.trim(); 
+        bubbleContents[index].content = bubbleContent.innerHTML;
+        
+        // Prevent contenteditables from collapsing visually when empty
+        if (!bubbleTitle.textContent.trim()) {
+             bubbleTitle.innerHTML = "&nbsp;"; 
+             bubbleContents[index].title = ""; 
+        }
+        if (!bubbleContent.textContent.trim()) {
+             bubbleContent.innerHTML = "&nbsp;"; 
+             bubbleContents[index].content = ""; 
+        }
+
+        localStorage.setItem('savedBubbleContent', JSON.stringify(bubbleContents));
+    }
+    
+    function saveAllBubbleCustomizations(bubble, index) {
+        if (!isEditorActive) return; 
+        
+        const titleEditorUI = bubble.querySelector('.title-editor-ui');
+        const contentEditorUI = bubble.querySelector('.content-editor-ui');
+        const bubbleTimerInput = bubble.querySelector('.bubble-timer-input');
+
+        bubbleCustomizations[index] = {
+            duration: bubbleTimerInput.value * 1000, 
+            titleColor: titleEditorUI.querySelector('.bubble-color-input[data-target="title"]').value,
+            titleFontSize: titleEditorUI.querySelector('.bubble-font-size-input[data-target="title"]').value,
+            titleFontWeight: titleEditorUI.querySelector('.bubble-font-weight-input[data-target="title"]').value,
+            glowColor: titleEditorUI.querySelector('.bubble-glow-color-input[data-target="title"]').value, 
+            contentColor: contentEditorUI.querySelector('.bubble-color-input[data-target="content"]').value,
+            contentFontSize: contentEditorUI.querySelector('.bubble-font-size-input[data-target="content"]').value,
+            contentFontWeight: contentEditorUI.querySelector('.bubble-font-weight-input[data-target="content"]').value,
+        };
+        
+        bubbleDurations[index] = bubbleCustomizations[index].duration;
+
+        localStorage.setItem('bubbleCustomizations', JSON.stringify(bubbleCustomizations));
+        localStorage.setItem('bubbleDurations', JSON.stringify(bubbleDurations));
+        
+        saveBubbleContent(bubble, index); 
+    }
+
+    function createBubble(index) {
+      if (index >= maxBubbleCount || activeBubble) return;
+      
+      const data = bubbleContents[index];
+      const bubble = document.createElement('div');
+      bubble.classList.add('bubble');
+      bubble.dataset.index = index;
+      
+      const timerUI = document.createElement('div');
+      timerUI.classList.add('timer-ui', 'editor-mode-only');
+      
+      const durationForThisBubble = bubbleDurations[index] || 18000;
+      bubbleDurations[index] = durationForThisBubble; 
+      const customizations = bubbleCustomizations[index] || {};
+      bubbleCustomizations[index] = customizations; 
+      
+      timerUI.innerHTML = `
+          <span>Duration (s):</span>
+          <input type="number" class="bubble-timer-input" value="${durationForThisBubble / 1000}" min="1" step="1">
+      `;
+      
+      // Bubble Content Elements
+      const bubbleTitle = document.createElement('h3');
+      bubbleTitle.classList.add('bubble-title');
+      bubbleTitle.setAttribute('contenteditable', 'false');
+      bubbleTitle.textContent = data.title; 
+      
+      const bubbleContent = document.createElement('div');
+      bubbleContent.classList.add('bubble-content');
+      bubbleContent.setAttribute('contenteditable', 'false');
+      bubbleContent.innerHTML = data.content;
+      
+      bubble.appendChild(bubbleTitle);
+      bubble.appendChild(bubbleContent);
+      bubble.appendChild(timerUI);
+      
+      // Editor UIs (Title & Content)
+      const titleEditorUI = document.createElement('div');
+      titleEditorUI.classList.add('bubble-editor-ui', 'title-editor-ui', 'editor-mode-only'); 
+      titleEditorUI.innerHTML = `
+          <h4 style="margin: 0; font-size: 0.9em; color: #f2994a; margin-bottom: 5px;">TITLE</h4>
+          <div>
+            <label>Color:</label>
+            <input type="color" class="bubble-color-input" data-target="title" value="#FFFFFF">
+          </div>
+          <div>
+            <label>Size:</label>
+            <input type="number" class="bubble-font-size-input" data-target="title" value="16" min="10" max="40">
+          </div>
+          <div>
+            <label>Weight:</label>
+            <select class="bubble-font-weight-input" data-target="title">
+              <option value="400">Normal</option>
+              <option value="700">Bold</option>
+              <option value="900">Bolder</option>
+            </select>
+          </div>
+          <div>
+            <label>Glow:</label>
+            <input type="color" class="bubble-glow-color-input" data-target="title" value="#FFFFFF">
+          </div>
+      `;
+      bubble.appendChild(titleEditorUI);
+      
+      const contentEditorUI = document.createElement('div');
+      contentEditorUI.classList.add('bubble-editor-ui', 'content-editor-ui', 'editor-mode-only'); 
+      contentEditorUI.innerHTML = `
+          <h4 style="margin: 0; font-size: 0.9em; color: #f2994a; margin-bottom: 5px;">BODY</h4>
+          <div>
+            <label>Color:</label>
+            <input type="color" class="bubble-color-input" data-target="content" value="#FFFFFF">
+          </div>
+          <div>
+            <label>Size:</label>
+            <input type="number" class="bubble-font-size-input" data-target="content" value="16" min="10" max="40">
+          </div>
+          <div>
+            <label>Weight:</label>
+            <select class="bubble-font-weight-input" data-target="content">
+              <option value="400">Normal</option>
+              <option value="700">Bold</option>
+              <option value="900">Bolder</option>
+            </select>
+          </div>
+      `;
+      bubble.appendChild(contentEditorUI);
+      
+      // Initial Positioning
+      bubble.style.top = `${Math.random() * 40}%`;
+      bubble.style.left = `${Math.random() * 30}%`;
+      bubble.style.opacity = 0;
+
+      bubblesWrapper.appendChild(bubble);
+      currentBubble = bubble; 
+      activeBubble = bubble;
+      
+      // Grab inner elements for style application
+      const bubbleTimerInput = bubble.querySelector('.bubble-timer-input');
+      const titleColorInput = titleEditorUI.querySelector('.bubble-color-input');
+      const titleFontSizeInput = titleEditorUI.querySelector('.bubble-font-size-input');
+      const titleFontWeightInput = titleEditorUI.querySelector('.bubble-font-weight-input');
+      const titleGlowColorInput = titleEditorUI.querySelector('.bubble-glow-color-input');
+      const contentColorInput = contentEditorUI.querySelector('.bubble-color-input');
+      const contentFontSizeInput = contentEditorUI.querySelector('.bubble-font-size-input');
+      const contentFontWeightInput = contentEditorUI.querySelector('.bubble-font-weight-input');
+      
+      // Apply saved style customizations
+      const defaultColor = '#FFFFFF';
+      const defaultFontSize = '16';
+      const defaultFontWeight = '400';
+      
+      bubbleTitle.style.color = customizations.titleColor || defaultColor;
+      bubbleTitle.style.fontSize = `${customizations.titleFontSize || defaultFontSize}px`;
+      bubbleTitle.style.fontWeight = customizations.titleFontWeight || defaultFontWeight;
+      
+      bubbleContent.style.color = customizations.contentColor || defaultColor;
+      bubbleContent.style.fontSize = `${customizations.contentFontSize || defaultFontSize}px`;
+      bubbleContent.style.fontWeight = customizations.contentFontWeight || defaultFontWeight;
+      
+      const glowColor = customizations.glowColor || defaultColor;
+      const r = parseInt(glowColor.substring(1, 3), 16);
+      const g = parseInt(glowColor.substring(3, 5), 16);
+      const b = parseInt(glowColor.substring(5, 7), 16);
+      bubble.style.setProperty('--bubble-glow-color', `${r}, ${g}, ${b}`);
+      
+      // Update UI inputs with saved values
+      titleColorInput.value = customizations.titleColor || defaultColor;
+      titleFontSizeInput.value = customizations.titleFontSize || defaultFontSize;
+      titleFontWeightInput.value = customizations.titleFontWeight || defaultFontWeight;
+      titleGlowColorInput.value = customizations.glowColor || defaultColor;
+      contentColorInput.value = customizations.contentColor || defaultColor;
+      contentFontSizeInput.value = customizations.contentFontSize || defaultFontSize;
+      contentFontWeightInput.value = customizations.contentFontWeight || defaultFontWeight;
+      
+      // Start Fade In
+      setTimeout(() => {
+        bubble.style.opacity = 1;
+      }, 200);
+      
+      // Start Movement
+      let dx = (Math.random() * 0.4 + 0.2) * (Math.random() < 0.5 ? 1 : -1);
+      let dy = (Math.random() * 0.4 + 0.2) * (Math.random() < 0.5 ? 1 : -1);
+      const wrapperWidth = bubblesWrapper.clientWidth - bubble.offsetWidth;
+      const wrapperHeight = bubblesWrapper.clientHeight - bubble.offsetHeight;
+      
+      function startMovement() {
+          moveInterval = setInterval(() => {
+              let top = parseFloat(bubble.style.top);
+              let left = parseFloat(bubble.style.left);
+
+              if (isNaN(top)) top = bubble.offsetTop;
+              if (isNaN(left)) left = bubble.offsetLeft;
+
+              top += dy;
+              left += dx;
+              
+              const topVal = top > wrapperHeight ? wrapperHeight : (top < 0 ? 0 : top);
+              const leftVal = left > wrapperWidth ? wrapperWidth : (left < 0 ? 0 : left);
+
+              if (top <= 0 || top >= wrapperHeight) dy *= -1;
+              if (left <= 0 || left >= wrapperWidth) dx *= -1;
+
+              bubble.style.top = `${topVal}px`;
+              bubble.style.left = `${leftVal}px`;
+          }, 20);
+      }
+      startMovement();
+
+      // Ensure editor controls are properly set for the new bubble
+      if (isEditorActive) {
+        updateBubbleControls(); 
+      }
+      
+      // --- EVENT LISTENERS FOR BUBBLE CONTROLS ---
+
+      function setupBubbleEditorListener(inputElement, targetElement, styleProperty, unit = '', isGlow = false) {
+          inputElement.addEventListener(inputElement.tagName === 'SELECT' ? 'change' : 'input', function() {
+              if (!isEditorActive) return;
+              
+              const value = this.value;
+              
+              if (isGlow) {
+                  const r = parseInt(value.substring(1, 3), 16);
+                  const g = parseInt(value.substring(3, 5), 16);
+                  const b = parseInt(value.substring(5, 7), 16);
+                  bubble.style.setProperty('--bubble-glow-color', `${r}, ${g}, ${b}`);
+              } else {
+                  targetElement.style[styleProperty] = value + unit;
+              }
+              
+              saveAllBubbleCustomizations(bubble, index); 
+          });
+      }
+
+      // Bubble Style Listeners
+      setupBubbleEditorListener(titleColorInput, bubbleTitle, 'color');
+      setupBubbleEditorListener(titleFontSizeInput, bubbleTitle, 'fontSize', 'px');
+      setupBubbleEditorListener(titleFontWeightInput, bubbleTitle, 'fontWeight');
+      setupBubbleEditorListener(titleGlowColorInput, bubble, 'glow', '', true); 
+      setupBubbleEditorListener(contentColorInput, bubbleContent, 'color');
+      setupBubbleEditorListener(contentFontSizeInput, bubbleContent, 'fontSize', 'px');
+      setupBubbleEditorListener(contentFontWeightInput, bubbleContent, 'fontWeight');
+
+      // Timer Input Listener
+      bubbleTimerInput.addEventListener('input', () => saveAllBubbleCustomizations(bubble, index));
+      
+      // Focus/Blur/Hover Handlers
+      function handleFocusIn(event) {
+          if (!isEditorActive) return;
+          clearTimeout(currentBubbleTimer);
+          hidePickerUI();
+          
+          titleEditorUI.style.display = 'none';
+          contentEditorUI.style.display = 'none';
+          
+          if (event.target === bubbleTitle) {
+             titleEditorUI.style.display = 'block';
+          } else if (event.target === bubbleContent) {
+             contentEditorUI.style.display = 'block';
+          }
+          
+          timerUI.style.display = 'block';
+          bubbleCounterUI.style.display = 'block';
+      }
+      
+      bubbleTitle.addEventListener('focusin', handleFocusIn);
+      bubbleContent.addEventListener('focusin', handleFocusIn);
+      
+      bubbleTitle.addEventListener('focusout', () => saveBubbleContent(bubble, index)); 
+      bubbleContent.addEventListener('focusout', () => saveBubbleContent(bubble, index));
+
+      // Mouseenter to show controls and pause timer
+      bubble.addEventListener('mouseenter', () => {
+          if (!isEditorActive) return; 
+          clearTimeout(currentBubbleTimer); 
+          timerUI.style.display = 'block';
+          titleEditorUI.style.display = 'block'; 
+          contentEditorUI.style.display = 'block'; 
+          bubbleCounterUI.style.display = 'block'; 
+          hidePickerUI(); 
+      });
+      
+      // Mouseleave to hide controls (if not focused on an input)
+      bubble.addEventListener('mouseleave', () => {
+          if (!isEditorActive) return;
+          
+          if (document.activeElement !== bubbleTitle && document.activeElement !== bubbleContent 
+              && !titleEditorUI.contains(document.activeElement)
+              && !contentEditorUI.contains(document.activeElement)
+              && !timerUI.contains(document.activeElement)) 
+          {
+              // We only hide the bubble-specific UIs, leaving counter if needed
+              timerUI.style.display = 'none';
+              titleEditorUI.style.display = 'none'; 
+              contentEditorUI.style.display = 'none';
+          }
+      });
+      
+      // Stop propagation on all editors/timers to prevent global click from hiding them
+      const editorControls = [bubbleTimerInput, titleColorInput, titleFontSizeInput, titleFontWeightInput, titleGlowColorInput, contentColorInput, contentFontSizeInput, contentFontWeightInput, timerUI, titleEditorUI, contentEditorUI];
+      editorControls.forEach(input => {
+          input.addEventListener('click', (event) => {
+              event.stopPropagation();
+          });
+      });
+
+
+      setBubbleTimer();
+      saveAllBubbleCustomizations(bubble, index); // Initial save for first time load/new bubble
+    }
+
+    // --- PARTICLE EFFECT ---
+
+    function createParticles() {
+      const particleCount = 100;
+      const bubblesWrapperRect = bubblesWrapper.getBoundingClientRect();
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        const size = Math.random() * 5 + 3;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        particle.style.top = `${Math.random() * bubblesWrapperRect.height}px`;
+        particle.style.left = `${Math.random() * bubblesWrapperRect.width}px`;
+        
+        particle.style.animationDuration = `${Math.random() * 2 + 2}s`;
+        bubblesWrapper.appendChild(particle);
+      }
+    }
+
+    // --- INITIALIZATION ---
+    function initialize() {
+        // Load initial state for header and CTA
+        loadGoogleFont('Roboto');
+        loadGoogleFont('Montserrat');
+        loadGoogleFont('Audiowide'); 
+        loadPickerCustomizations();
+        
+        // Ensure content array size matches max count
+        updateBubbleContentLength(maxBubbleCount);
+        
+        // Start the engine
+        createBubble(bubbleIndex);
+        createParticles();
+    }
+    
+    // --- GLOBAL EVENT LISTENERS ---
+
+    // Password Gate Listeners
+    passwordSubmit.addEventListener('click', checkPassword);
+    passwordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') checkPassword();
+    });
+
+    // Universal Interaction Listener for Password Gate
+    document.addEventListener('click', function(event) {
+        if (isEditorActive) return;
+
+        const isCTA = event.target.closest('.cta-btn');
+        const isEngineElement = event.target.closest('.software-name') || event.target.closest('.bubble');
+
+        if (isCTA) {
+            applyJiggleAnimation(isCTA);
+            return; 
+        }
+
+        if (isEngineElement) {
+            event.preventDefault();
+            event.stopPropagation();
+            showPasswordUI(); 
+            return;
+        }
+    }, true); 
+
+    // Header/CTA Picker Activation
+    softwareName.addEventListener('click', function() {
+        if (!isEditorActive) return;
+        currentElement = this;
+        openPicker(this, 'header');
+        applyJiggleAnimation(this);
+    });
+
+    ctaBtn.addEventListener('click', function(event) {
+        if (!isEditorActive) return;
+        
+        event.preventDefault();
+        
+        currentElement = this;
+        openPicker(this, 'cta');
+        applyJiggleAnimation(this);
+    });
+    
+    // Picker Hide Listener (Hides picker if click is outside it, CTA, header, or bubble)
+    document.addEventListener('click', function(event) {
+        if (!isEditorActive) return;
+
+        if (!pickerUI.contains(event.target) && !event.target.closest('.cta-btn') && !event.target.closest('.software-name') && !event.target.closest('.bubble')) {
+            hidePickerUI();
+        }
+    });
+
+    // --- PICKER INPUT LISTENERS ---
+
+    // 1. Header Text Color Listener (Uses 'colorPicker', targets 'softwareName')
+    colorPicker.addEventListener('input', function() {
+      if (isEditorActive) {
+        softwareName.style.color = this.value;
+        savePickerCustomizations();
+      }
+    });
+    
+    // 2. CTA Text Color Listener (Uses 'ctaTextColorPicker', targets 'ctaBtn')
+    ctaTextColorPicker.addEventListener('input', function() {
+      if (isEditorActive) {
+        ctaBtn.style.color = this.value;
+        savePickerCustomizations();
+      }
+    });
+    
+    // 3. Header Background Listener
+    headerBgColorPicker.addEventListener('input', function() {
+      if (isEditorActive) {
+        softwareName.style.backgroundColor = this.value;
+        savePickerCustomizations();
+      }
+    });
+    
+    // 4. CTA Background Listener
+    ctaBgColorPicker.addEventListener('input', function() {
+      if (isEditorActive) {
+        ctaBtn.style.backgroundColor = this.value;
+        savePickerCustomizations();
+      }
+    });
+    
+    // 5. CTA Link Listener
+    ctaLinkInput.addEventListener('input', function() {
+      if (isEditorActive) {
+        let newLink = this.value.trim();
+        
+        if (!newLink.startsWith('http://') && !newLink.startsWith('https://') && newLink.length > 0) {
+            newLink = 'https://' + newLink;
+        }
+        
+        ctaBtn.href = newLink;
+        localStorage.setItem('ctaLink', newLink);
+        savePickerCustomizations(); 
+      }
+    });
+    
+    // 6. Font Size Listener (Must check currentElement context)
+    fontSizeInput.addEventListener('input', function() {
+      if (currentElement && isEditorActive) {
+        currentElement.style.fontSize = fontSizeInput.value + 'px';
+        savePickerCustomizations();
+      }
+    });
+    
+    // 7. Font Weight Listener (Must check currentElement context)
+    fontWeightInput.addEventListener('change', function() {
+      if (currentElement && isEditorActive) {
+        currentElement.style.fontWeight = fontWeightInput.value;
+        savePickerCustomizations();
+      }
+    });
+    
+    // Content Editable Listeners on Header/CTA
+    softwareName.addEventListener('focusout', savePickerCustomizations);
+    ctaBtn.addEventListener('focusout', savePickerCustomizations);
+
+    // Font Search Listener
+    fontSearch.addEventListener('input', function() {
+      const searchTerm = fontSearch.value.toLowerCase();
+      fontSuggestions.innerHTML = '';
+      const filteredFonts = googleFontList.filter(font => font.toLowerCase().includes(searchTerm)).slice(0, 10);
+      filteredFonts.forEach(font => {
+        const fontItem = document.createElement('div');
+        fontItem.textContent = font;
+        fontItem.style.fontFamily = font;
+        fontItem.classList.add('font-suggestion');
+        fontItem.addEventListener('click', () => {
+          if (currentElement && isEditorActive) {
+            currentElement.style.fontFamily = `'${font}', sans-serif`;
+            loadGoogleFont(font);
+            savePickerCustomizations(); 
+          }
+          fontSuggestions.innerHTML = '';
+          fontSearch.value = font;
+        });
+        fontSuggestions.appendChild(fontItem);
+      });
+    });
+
+    // Bubble Counter Listeners
+    maxBubbleCountInput.addEventListener('change', saveMaxBubbleCount);
+    maxBubbleCountInput.addEventListener('focusout', saveMaxBubbleCount);
+
+    // Global listener to hide counter UI and restart timer if click is outside it
+    document.addEventListener('click', function(event) {
+        if (!isEditorActive) return;
+        
+        const isClickInsideBubbleOrEditors = currentBubble && (
+            currentBubble.contains(event.target) || 
+            event.target.closest('.timer-ui') || 
+            event.target.closest('.title-editor-ui') || 
+            event.target.closest('.content-editor-ui')
+        );
+        const isClickInsideCounter = bubbleCounterUI.contains(event.target);
+
+        if (bubbleCounterUI.style.display === 'block' && !isClickInsideBubbleOrEditors && !isClickInsideCounter && pickerUI.style.display !== 'block') {
+            saveMaxBubbleCount(); 
+            bubbleCounterUI.style.display = 'none';
+            // Only restart timer if no other input is active and we were editing a bubble
+            if (currentBubble && !document.activeElement.closest('.bubble-editor-ui')) { 
+                setBubbleTimer(); 
+            }
+        }
+    }, true); 
+
+    // --- RUN INITIALIZATION ---
+    initialize();
+    })();
+  </script>
+</body>
+</html>
